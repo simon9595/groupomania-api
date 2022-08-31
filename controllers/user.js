@@ -4,9 +4,12 @@ const jwt = require('jsonwebtoken');
 const models = require('../models');
 
 exports.signup = (req, res, next) => {
-    console.log('works')
+    console.log(req.body)
     const { username, email, password } = req.body
-    models.User.findOne({
+    if (username == null || email == null || password == null) {
+        res.status(400).json({ error: 'Please enter a valid username, email and password'})
+    } else {
+    models.User.findOne({ 
         attributes: ['email'],
         where: { email: email }
     }).then(user =>{
@@ -27,16 +30,15 @@ exports.signup = (req, res, next) => {
             console.log('User already exists')
             res.status(403).json({ error: 'User already exists' })
         }
-    })
-   
-}
+    }).catch(err => { res.status(500).json({ err })})
+   }};
 
 exports.login = (req, res, next) => {
-    console.log('bing')
+    console.log(req.body)
     const { email, password } = req.body
     if (email == null || password == null) {
         res.status(400).json({ error: 'Please enter a valid email and password'})
-    }
+    } else {
     models.User.findOne({
         where: { email: email }
     })
@@ -50,5 +52,9 @@ exports.login = (req, res, next) => {
                 }
             })
         }
+        else {
+            console.log('Not a user')
+            res.status(404).json({ error: 'User not found'})
+        }
     }).catch(err => { res.status(500).json({ err })})
-}
+}};

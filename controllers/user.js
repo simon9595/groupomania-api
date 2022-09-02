@@ -6,7 +6,14 @@ const models = require('../models');
 exports.signup = (req, res, next) => {
     console.log(req.body)
     const { username, email, password } = req.body
-    if (username == null || email == null || password == null) {
+    const regexEmail = /^[a-zA-Z0-9._-]{3,}@[a-zA-Z0-9._-]{2,}\.[a-z]{2,10}$/;
+    const regexUsername = /^[a-zA-Z0-9_-]{3,15}$/;
+    const regexPassword = /^.{8,}$/;
+    let correctEmail = regexEmail.test(email);
+    let correctUsername = regexUsername.test(username);
+    let correctPassword = regexPassword.test(password);
+    console.log(correctEmail, correctUsername, correctPassword);
+    if (username == null || email == null || password == null || !correctEmail || !correctUsername || !correctPassword) {
         res.status(400).json({ error: 'Please enter a valid username, email and password'})
     } else {
     models.User.findOne({ 
@@ -36,7 +43,12 @@ exports.signup = (req, res, next) => {
 exports.login = (req, res, next) => {
     console.log(req.body)
     const { email, password } = req.body
-    if (email == null || password == null) {
+    const regexEmail = /^[a-zA-Z0-9._-]{3,}@[a-zA-Z0-9._-]{2,}\.[a-z]{2,10}$/;
+    const regexPassword = /^.{8,}$/;
+    let correctEmail = regexEmail.test(email);
+    let correctPassword = regexPassword.test(password);
+
+    if (email == null || password == null || !correctEmail || !correctPassword) {
         res.status(400).json({ error: 'Please enter a valid email and password'})
     } else {
     models.User.findOne({
@@ -44,9 +56,16 @@ exports.login = (req, res, next) => {
     })
     .then(user => {
         if (user) {
+            const token = jwt.sign(
+                { userId: user.UUID },
+                'CHANGE_ME',
+                {expiresIn: '24h' });
             bcrypt.compare(password, user.password, (errComparePassword, bcryptResult) => {
                 if (bcryptResult) {
-                    res.status(200).json({ 'ok': 'ok' })
+                    res.status(200).json({ 
+                        username: user._id,
+                        token: token
+                     })
                 } else {
                     res.status(403).json({ error: 'incorrect password'})
                 }

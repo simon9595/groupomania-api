@@ -3,7 +3,7 @@ const { Sequelize } = require('sequelize');
 const path = require('path');
 
 const userRoutes = require('./routes/user');
-// const postRoutes = require('/routes/post);
+const postRoutes = require('./routes/post');
 
 const app = express();
 
@@ -15,7 +15,7 @@ const sequelize = new Sequelize('groupomania_db', 'szymon', 'abcd1234', {
 sequelize
   .authenticate()
   .then(() => {
-    console.log('Connection has been established successfully.');
+    console.log('Database connection has been established successfully.');
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use('/api/user', userRoutes); 
-// app.use('/api/post', postRoutes);
+app.use('/api/post', postRoutes);
 
 module.exports = app;
 

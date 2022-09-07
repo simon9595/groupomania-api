@@ -13,7 +13,7 @@ exports.signup = (req, res, next) => {
     let correctUsername = regexUsername.test(username);
     let correctPassword = regexPassword.test(password);
     console.log(correctEmail, correctUsername, correctPassword);
-    if (username == null || email == null || password == null || !correctEmail || !correctUsername || !correctPassword) {
+    if (!correctEmail || !correctUsername || !correctPassword) {
         res.status(400).json({ error: 'Please enter a valid username, email and password'})
     } else {
     models.User.findOne({ 
@@ -43,7 +43,7 @@ exports.signup = (req, res, next) => {
 exports.login = (req, res, next) => {
     console.log(req.body)
     const { email, password } = req.body
-    const regexEmail = /^[a-zA-Z0-9._-]{3,}@[a-zA-Z0-9._-]{2,}\.[a-z]{2,10}$/;
+    const regexEmail = /^[a-zA-Z0-9._-]{3,}@[a-zA-Z0-9._-]{2,}\.[a-z]{2,10}(\.[a-z]{2,8})?$/;
     const regexPassword = /^.{8,}$/;
     let correctEmail = regexEmail.test(email);
     let correctPassword = regexPassword.test(password);
@@ -57,7 +57,7 @@ exports.login = (req, res, next) => {
     .then(user => {
         if (user) {
             const token = jwt.sign(
-                { userId: user.UUID },
+                { userId: user._id },
                 'CHANGE_ME',
                 {expiresIn: '24h' });
             bcrypt.compare(password, user.password, (errComparePassword, bcryptResult) => {
@@ -77,3 +77,22 @@ exports.login = (req, res, next) => {
         }
     }).catch(err => { res.status(500).json({ err })})
 }};
+
+exports.getUser = (req, res) => {
+    const username = req.params.username;
+    models.User.findOne({
+        where: { username: username }
+    })
+    .then(
+        (user) => {
+            res.status(200).json(user)
+        }
+    )
+    .catch(
+        (error) => {
+            res.status(404).json({
+                error: error
+            })
+        }
+    )
+}

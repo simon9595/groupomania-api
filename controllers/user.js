@@ -6,14 +6,14 @@ const models = require('../models');
 exports.signup = (req, res, next) => {
     console.log(req.body)
     const { username, email, password } = req.body
-    const regexEmail = /^[a-zA-Z0-9._-]{3,}@[a-zA-Z0-9._-]{2,}\.[a-z]{2,10}$/;
-    const regexUsername = /^[a-zA-Z0-9_-]{3,15}$/;
+    const regexEmail = /^[a-zA-Z0-9\._-]{3,}@[a-zA-Z0-9._-]{2,}\.[a-z]{2,10}(\.[a-z]{2,8})?$/;
+    const regexUsername = /^[a-zA-Z0-9_-]{4,15}$/; // fix this
     const regexPassword = /^.{8,}$/;
     let correctEmail = regexEmail.test(email);
     let correctUsername = regexUsername.test(username);
     let correctPassword = regexPassword.test(password);
-    console.log(correctEmail, correctUsername, correctPassword);
-    if (!correctEmail || !correctUsername || !correctPassword) {
+    console.log('correct email:', correctEmail, 'correct username:', correctUsername,'correct password:', correctPassword);
+    if (!correctEmail || !correctUsername || !correctPassword || username == null) {
         res.status(400).json({ error: 'Please enter a valid username, email and password'})
     } else {
     models.User.findOne({ 
@@ -63,8 +63,11 @@ exports.login = (req, res, next) => {
             bcrypt.compare(password, user.password, (errComparePassword, bcryptResult) => {
                 if (bcryptResult) {
                     res.status(200).json({ 
-                        username: user._id,
-                        token: token
+                        userId: user.id,
+                        username: user.username,
+                        email: user.email,
+                        isAdmin: user.isAdmin,
+                        token: token,
                      })
                 } else {
                     res.status(403).json({ error: 'incorrect password'})
@@ -95,4 +98,38 @@ exports.getUser = (req, res) => {
             })
         }
     )
+};
+
+exports.changePassword = (req, res) => {
+    console.log(req.body)
+    const { userId, password } = req.body;
+    models.User.findOne({
+        where: { id: userId }
+    }).then(user =>{
+        if (!user) {
+            res.send(500).json({'Error': 'Something went wrong.'})
+        } else {
+            console.log('Changing password')
+            bcrypt.hash(password, 10, function (err, bcryptPassword) {
+                models.User.update(
+                    { password: bcryptPassword },
+                    { where: { id: userId }}
+                )
+                .then(() => {
+                    console.log('Password changed!')
+                    res.status(200).json({ 'Request successful': 'Password changed!'})
+                })
+                .catch(error => console.log(error))
+            })
+        }
+        console.log(user)
+    })
+    res.status(200).json({'Request received' : 'Okay'})
+}
+
+exports.deleteAccount = (req, res) => {
+    console.log('account deletion')
+    // implement a more secure way of doing this
+    res.status(200).json({'Account deletion request received': 'OK'})
+
 }

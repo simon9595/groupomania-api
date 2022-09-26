@@ -1,10 +1,9 @@
 const models = require('../models');
 
 exports.publish = (req, res) => {
-  console.log(req.body);
-  const { userId, text, attachment } = req.body;
-  console.log('testing');
-  console.log(userId, text, attachment);
+  const { userId, text } = req.body;
+  const attachment = req.file;
+  const url = req.protocol + '://' + req.get('host');
   models.User.findOne({
     attributes: ['id'],
     where: { id: userId }
@@ -12,14 +11,43 @@ exports.publish = (req, res) => {
     if (!user){
       console.log('User not found.')
     } else {
+      if (req.file !== null) {
+        var attachmentUrl = url + '/images/' + attachment.filename
+      }
+      console.log(attachmentUrl)
       let newPost = models.Post.create({
         text: text,
-        attachment: attachment,
-        userId: user.id
+        userId: user.id,
+        attachment: attachmentUrl
       }).then(newPost => res.status(201).json({ 'post published': 'OK' }))
-      .catch(err => res.status(500).json({ err }))}})
-    .catch(err => res.status(500).json({ err }))
+      .catch(err => res.status(500).json({ err }))
     }
+  })
+    .catch(err => res.status(500).json({ err }))
+}
+
+exports.modifyPost = (req, res) => {
+  console.log('Post modification request received', req.body)
+}
+
+exports.likePost = (req, res) => {
+  console.log(req.body)
+  // BROKEN BROKEN BROKEN
+  // models.Post.findOne({
+  //   attributes: ['id'],
+  //   where: { id: req.body.id}
+  // }).then(post => {
+  //   console.log(post)
+  //   models.Post.update({
+  //     attributes: ['id'],
+  //     where: { id: req.body.id },
+  //     $inc: { likes: 1 },
+  //     $push: { likedUsers: req.body.userId }
+  //   }).then(() =>
+  //     {res.status(201).json({ message: 'Liked!'})}
+  //   ).catch(error => { res.status(500).json({ error })})
+  // }).catch(error => {res.status(500).json({ error })})
+}
 
 exports.getAll = (req, res, next) => {
   console.log('Get all posts');

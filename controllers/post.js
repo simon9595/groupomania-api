@@ -52,7 +52,7 @@ exports.likePost = (req, res) => {
 
 exports.getAll = (req, res, next) => {
   console.log('Get all posts');
-  models.Post.findAll({ include: [{model: models.User, attributes: ['username']}]})
+  models.Post.findAll({ include: [{model: models.User, attributes: ['username']}], order: [['createdAt', 'DESC']]})
   .then(posts => 
     res.status(200).json(posts))
   .catch(err => console.log(err))

@@ -18,7 +18,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false },
     attachment: DataTypes.STRING,
-    text: DataTypes.TEXT,
+    text: {
+      type: DataTypes.TEXT,
+      defaultValue: '',
+      allowNull: false
+    },
     likes: {
       type: DataTypes.INTEGER,
       defaultValue: 0},
@@ -27,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: ''},
     comments: {
       type: DataTypes.STRING,
-      defaultValue: 0
+      defaultValue: ''
     }
   }, {
     sequelize,

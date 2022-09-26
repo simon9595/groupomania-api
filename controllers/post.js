@@ -11,9 +11,10 @@ exports.publish = (req, res) => {
     if (!user){
       console.log('User not found.')
     } else {
-      if (req.file !== null) {
+      if (req.file !== undefined) {
+        console.log('Post contains image')
         var attachmentUrl = url + '/images/' + attachment.filename
-      }
+      } 
       console.log(attachmentUrl)
       let newPost = models.Post.create({
         text: text,

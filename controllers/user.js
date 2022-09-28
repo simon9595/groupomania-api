@@ -82,9 +82,9 @@ exports.login = (req, res, next) => {
 }};
 
 exports.getUser = (req, res) => {
-    const username = req.params.username;
+    const id = req.params.id;
     models.User.findOne({
-        where: { username: username }
+        where: { id: id }
     })
     .then(
         (user) => {

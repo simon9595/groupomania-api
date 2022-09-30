@@ -57,7 +57,7 @@ exports.login = (req, res, next) => {
     .then(user => {
         if (user) {
             const token = jwt.sign(
-                { userId: user._id },
+                { userId: user.id },
                 'CHANGE_ME',
                 {expiresIn: '24h' });
             bcrypt.compare(password, user.password, (errComparePassword, bcryptResult) => {

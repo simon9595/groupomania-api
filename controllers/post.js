@@ -1,5 +1,6 @@
 const models = require('../models');
 
+
 exports.publish = (req, res) => {
   const { userId, text } = req.body;
   const attachment = req.file;
@@ -24,11 +25,29 @@ exports.publish = (req, res) => {
       .catch(err => res.status(500).json({ err }))
     }
   })
-    .catch(err => res.status(500).json({ err }))
+  .catch(err => res.status(500).json({ err }))
 }
 
 exports.modifyPost = (req, res) => {
-  console.log('Post modification request received', req.body)
+  const { userId, postId, text } = req.body;
+  models.User.findOne({
+    where: { id: userId }
+  }).then(user => {
+    if (!user) {
+      res.status(500).json({ 'error': 'Something went wrong'})
+    } else {
+      console.log(userId, postId, text)
+      models.Post.update(
+        { text: text },
+        { where: { id: postId}}
+      ).
+      then(() => {
+        console.log('Success')
+        res.status(200).json({'Success': 'Post had been modified'})
+      })
+      .catch(error => console.log(error))
+    }
+  }).catch(error => console.log(error))
 }
 
 exports.likePost = (req, res) => {

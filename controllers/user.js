@@ -123,8 +123,7 @@ exports.changePassword = (req, res) => {
             })
         }
         console.log(user)
-    })
-    res.status(200).json({'Request received' : 'Okay'})
+    }).catch(error => res.status(500).json({ error }))
 }
 
 exports.deleteAccount = (req, res) => {

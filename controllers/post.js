@@ -3,6 +3,7 @@ const fs = require('fs')
 
 exports.publish = (req, res) => {
   const { userId, text } = req.body;
+  console.log('User ID', userId)
   const attachment = req.file;
   const url = req.protocol + '://' + req.get('host');
   models.User.findOne({
@@ -11,12 +12,12 @@ exports.publish = (req, res) => {
   }).then(user => {
     if (!user){
       console.log('User not found.')
+      res.status(500).json({ 'error': 'Something went wrong' })
     } else {
       if (req.file !== undefined) {
         console.log('Post contains image')
         var attachmentUrl = url + '/images/' + attachment.filename
       } 
-      console.log(attachmentUrl)
       let newPost = models.Post.create({
         text: text,
         userId: user.id,
@@ -70,48 +71,45 @@ exports.likePost = (req, res) => {
 }
 
 exports.deletePost = (req, res) => {
-  // console.log('Post deletion request received', req.headers, req.body)
-  const { userId, postId } = req.body
-  models.User.findOne({
-    where: { id: userId }
-  }).then (user => {
-    if(user.id == userId) {
-      console.log('Match')
-      models.Post.findOne({
-        where: { id: postId }
-      }).then((post) =>{
-        console.log(post.attachment)
-        const attachment = post.attachment
-        if(attachment) {
-          console.log('Post contains an attachment')
-          const filename = attachment.split('/images/')[1];
-          fs.unlink('images/' + filename, () => {
-            models.Post.destroy({
-              where: { id: post.id }
-            }).then(
-              res.status(200).json({ 'OK': 'Post with image has been deleted'})
-            ).catch(error => res.send(500).json({error}))
-          })
-        } else {
-          console.log('It doesn\'t')
-          models.Post.destroy({
-            where: { id: post.id }
-          }).then(
-            res.status(200).json({ 'OK': 'Post without image has been deleted'})
-          ).catch(error => res.send(500).json({ error }))
-        }
-      }).catch(error => {
-        console.log(error)
-        res.status(500).json({ error })
+  const postId = req.params.id
+  models.Post.findOne({
+    where: { id: postId }
+  }).then((post) =>{
+    console.log(post.attachment)
+    const attachment = post.attachment
+    if(attachment) {
+      console.log('Post contains an attachment')
+      const filename = attachment.split('/images/')[1];
+      fs.unlink('images/' + filename, () => {
+        models.Post.destroy({
+          where: { id: post.id }
+        }).then(
+          res.status(200).json({ 'OK': 'Post with image has been deleted'})
+        ).catch(error => res.status(500).json({error}))
       })
+    } else {
+      console.log('It doesn\'t')
+      models.Post.destroy({
+        where: { id: post.id }
+      }).then(
+        res.status(200).json({ 'OK': 'Post without image has been deleted'})
+      ).catch(error => res.send(500).json({ error }))
     }
-  }).catch(error => res.send(500).json(error))
+  }).catch(error => {
+    console.log(error)
+    res.status(500).json({ error })
+  })
 }
 
 exports.getAll = (req, res, next) => {
-  console.log('Get all posts');
+  const { userId } = req.body
+  console.log(userId);
+  console.log(req.params )
   models.Post.findAll({ include: [{model: models.User, attributes: ['username']}], order: [['createdAt', 'DESC']]})
   .then(posts => 
     res.status(200).json(posts))
+    // models.Seen.findAll({
+      
+    // })
   .catch(err => console.log(err))
 }

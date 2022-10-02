@@ -1,5 +1,5 @@
 const models = require('../models');
-
+const fs = require('fs')
 
 exports.publish = (req, res) => {
   const { userId, text } = req.body;
@@ -67,6 +67,45 @@ exports.likePost = (req, res) => {
   //     {res.status(201).json({ message: 'Liked!'})}
   //   ).catch(error => { res.status(500).json({ error })})
   // }).catch(error => {res.status(500).json({ error })})
+}
+
+exports.deletePost = (req, res) => {
+  // console.log('Post deletion request received', req.headers, req.body)
+  const { userId, postId } = req.body
+  models.User.findOne({
+    where: { id: userId }
+  }).then (user => {
+    if(user.id == userId) {
+      console.log('Match')
+      models.Post.findOne({
+        where: { id: postId }
+      }).then((post) =>{
+        console.log(post.attachment)
+        const attachment = post.attachment
+        if(attachment) {
+          console.log('Post contains an attachment')
+          const filename = attachment.split('/images/')[1];
+          fs.unlink('images/' + filename, () => {
+            models.Post.destroy({
+              where: { id: post.id }
+            }).then(
+              res.status(200).json({ 'OK': 'Post with image has been deleted'})
+            ).catch(error => res.send(500).json({error}))
+          })
+        } else {
+          console.log('It doesn\'t')
+          models.Post.destroy({
+            where: { id: post.id }
+          }).then(
+            res.status(200).json({ 'OK': 'Post without image has been deleted'})
+          ).catch(error => res.send(500).json({ error }))
+        }
+      }).catch(error => {
+        console.log(error)
+        res.status(500).json({ error })
+      })
+    }
+  }).catch(error => res.send(500).json(error))
 }
 
 exports.getAll = (req, res, next) => {

@@ -128,8 +128,28 @@ exports.changePassword = (req, res) => {
 }
 
 exports.deleteAccount = (req, res) => {
-    console.log('account deletion')
-    // implement a more secure way of doing this
-    res.status(200).json({'Account deletion request received': 'OK'})
+    console.log(req.body)
+    const { userId, password } = req.body;
+    models.User.findOne({
+        where: { id: userId }
+    }).then(user => {
+        bcrypt.compare(password, user.password, (errComparePassword, bcryptResult) => {
+            if (bcryptResult) {
+                models.Post.destroy({
+                    where: {userId: user.id}
+                }).then(() => {
+                    console.log('Posts deleted')
+                    models.User.destroy({
+                        where: { id: userId }
+                    }).then(
+                        res.status(200).json('Account deleted')
+                    ).catch(error => { res.send(400).json({ error })})
+                }).catch(error => res.send(500).json(error))
+            } else {
+                res.status(403).json('Password mismatch')
+            }
+        })
+    })
+
 
 }

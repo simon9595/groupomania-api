@@ -8,7 +8,7 @@ router.post('/publish', auth, multer, postCtrl.publish);
 router.put('/modify', auth, postCtrl.modifyPost);
 router.get('/', auth, postCtrl.getAll);
 // router.get('/:id', postCtrl.getPost);
-// router.delete('/:id', postCtrl.deletePost);
+router.delete('/:id', auth, postCtrl.deletePost);
 router.post('/:id/like', postCtrl.likePost);
 // comments
 

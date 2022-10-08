@@ -1,5 +1,6 @@
 const models = require('../models');
-const fs = require('fs')
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 exports.publish = (req, res) => {
   const { userId, text } = req.body;
@@ -18,11 +19,12 @@ exports.publish = (req, res) => {
         console.log('Post contains image')
         var attachmentUrl = url + '/images/' + attachment.filename
       } 
-      let newPost = models.Post.create({
+      models.Post.create({
         text: text,
         userId: user.id,
         attachment: attachmentUrl
-      }).then(newPost => res.status(201).json({ 'post published': 'OK' }))
+      }).then(res.status(201).json({'Post published': 'OK'}))
+      // res.status(201).json({ 'post published': 'OK' })
       .catch(err => res.status(500).json({ err }))
     }
   })
@@ -102,14 +104,35 @@ exports.deletePost = (req, res) => {
 }
 
 exports.getAll = (req, res, next) => {
-  const { userId } = req.body
-  console.log(userId);
-  console.log(req.params )
-  models.Post.findAll({ include: [{model: models.User, attributes: ['username']}], order: [['createdAt', 'DESC']]})
-  .then(posts => 
-    res.status(200).json(posts))
-    // models.Seen.findAll({
-      
-    // })
+  const token = req.headers.authorization.split(' ')[1];
+  const decodedToken = jwt.verify(token, 'CHANGE_ME');
+  const userId = decodedToken.userId
+  models.Post.findAll({ include: [
+    {
+      model: models.User,
+      attributes: ['username'],
+     }, {
+      model: models.Seen,
+      where: {userID: userId},
+      attributes: ['seen'],
+      required: false
+     }
+  ], order: [['createdAt', 'DESC']]})
+  .then(posts => {
+    res.status(200).json(posts)})
   .catch(err => console.log(err))
+}
+
+exports.seenPosts = (req, res) => { 
+  const { userId } = req.body
+  console.log(userId)
+  models.Post.findAll({attributes: ['id']}).then(allPosts => {
+    console.log(allPosts[0].id)
+    for(let i = 0; i < allPosts.length; i++) {
+      models.Seen.findOrCreate({
+        where: {userId: userId, postId: allPosts[i].id, seen: true}
+      }).then(console.log('Marking post as seen')).catch(error => res.status(500).json({error}))
+    }
+  }).catch(error => res.status(500).json({error}))
+  res.status(200).json({ 'OK': 'Posts marked as seen!'})
 }

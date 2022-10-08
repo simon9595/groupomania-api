@@ -7,9 +7,8 @@ const postCtrl = require('../controllers/post');
 router.post('/publish', auth, multer, postCtrl.publish);
 router.put('/modify', auth, multer, postCtrl.modifyPost);
 router.get('/', auth, postCtrl.getAll);
-// router.get('/:id', postCtrl.getPost);
 router.delete('/:id', auth, postCtrl.deletePost);
 router.post('/:id/like', postCtrl.likePost);
-// comments
+router.post('/seen', postCtrl.seenPosts)
 
 module.exports = router;

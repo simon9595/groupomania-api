@@ -8,7 +8,6 @@ router.post('/publish', auth, multer, postCtrl.publish);
 router.put('/modify', auth, multer, postCtrl.modifyPost);
 router.get('/', auth, postCtrl.getAll);
 router.delete('/:id', auth, postCtrl.deletePost);
-router.post('/:id/like', postCtrl.likePost);
 router.post('/seen', postCtrl.seenPosts)
 
 module.exports = router;

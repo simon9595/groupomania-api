@@ -11,8 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.belongsToMany(models.Post, {through: 'postId'})
-      this.belongsToMany(models.User, {through: 'userId'})
+      this.belongsToMany(models.Post, {through: 'posts'})
+      this.belongsToMany(models.User, {through: 'users'})
     }
   };
   Seen.init({

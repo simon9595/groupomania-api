@@ -23,16 +23,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       defaultValue: '',
       allowNull: false
-    },
-    likes: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0},
-    likedUsers: { 
-      type: DataTypes.STRING,
-      defaultValue: ''},
-    comments: {
-      type: DataTypes.STRING,
-      defaultValue: ''
     }
   }, {
     sequelize,

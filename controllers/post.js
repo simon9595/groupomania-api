@@ -103,6 +103,6 @@ exports.seenPosts = (req, res) => {
       }).then(console.log('Marking post as seen'))
       .catch(error => res.status(500).json({error}))
     }
-  }).catch(error => res.status(500).json({error}))
-  res.status(200).json({ 'OK': 'Posts marked as seen!'})
+  }).then(res.status(200).json({ 'OK': 'Posts marked as seen!'}))
+  .catch(error => res.status(500).json({error}))
 }

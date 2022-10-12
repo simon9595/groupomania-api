@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   };
   Seen.init({
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false
     },
     postId: {

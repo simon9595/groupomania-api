@@ -39,12 +39,30 @@ exports.modifyPost = (req, res) => {
       if(req.file){
         const url = req.protocol + '://' + req.get('host');
         let attachmentUrl = url + '/images/' + attachment.filename
-          models.Post.update(
-            {text: text,
-            attachment: attachmentUrl},
-            {where: { id: postId}}
-          ).then(res.status(200).json({ 'Success': 'Post has been successfully edited'}))
-          .catch(err => res.status(500).json({err}))
+        models.Post.findOne({
+          where: { id: postId }
+        }).then((post) => {
+          if(post.attachment != null) {
+            console.log('Post already contains an image')
+            console.log(post.attachment)
+            const oldPicture = post.attachment.split('/images/')[1]
+            fs.unlink('images/' + oldPicture, () => {
+              models.Post.update(
+                {text: text,
+                attachment: attachmentUrl},
+                {where: {id: postId}}
+              ).then(res.status(200).json({ 'Success': 'Post has been successfully edited'}))
+              .catch(err => res.status(500).json({ err }))
+            })
+          } else {
+              models.Post.update(
+                {text: text,
+                attachment: attachmentUrl},
+                {where: { id: postId}}
+              ).then(res.status(200).json({ 'Success': 'Post has been successfully edited'}))
+              .catch(err => res.status(500).json({err}))            
+          }
+        }).catch(err => console.log(err))
       } else {
       models.Post.update(
         { text: text },

@@ -29,12 +29,23 @@ exports.publish = (req, res) => {
 
 exports.modifyPost = (req, res) => {
   const { userId, postId, text } = req.body;
+  const attachment = req.file;
   models.User.findOne({
     where: { id: userId }
   }).then(user => {
     if (!user) {
       res.status(500).json({ 'error': 'Something went wrong'})
     } else {
+      if(req.file){
+        const url = req.protocol + '://' + req.get('host');
+        let attachmentUrl = url + '/images/' + attachment.filename
+          models.Post.update(
+            {text: text,
+            attachment: attachmentUrl},
+            {where: { id: postId}}
+          ).then(res.status(200).json({ 'Success': 'Post has been successfully edited'}))
+          .catch(err => res.status(500).json({err}))
+      } else {
       models.Post.update(
         { text: text },
         { where: { id: postId}}
@@ -43,8 +54,8 @@ exports.modifyPost = (req, res) => {
         res.status(200).json({'Success': 'Post had been modified'})
       })
       .catch(error => res.status(500).json({error}))
-    }
-  }).catch(error => res.status(500).json({error}))
+    }}
+  })
 }
 
 exports.deletePost = (req, res) => {
